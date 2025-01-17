@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <!-- NuGet Packaging -->
-        <PackageVersion>0.0.2</PackageVersion>
+        <PackageVersion>0.0.3</PackageVersion>
         <Authors>Annulus Games</Authors>
         <Copyright>© Annulus Games</Copyright>
         <PackageProjectUrl>https://github.com/AnnulusGames/Barrage</PackageProjectUrl>
@@ -15,7 +15,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="../../Icon.png" Pack="true" PackagePath="/" />
+        <None Include="..\..\Icon.png" Pack="true" PackagePath="/" />
         <None Include="..\..\LICENSE" Pack="true" PackagePath=""/>
         <None Include="..\..\README.md" Pack="true" PackagePath="README.md"/>
     </ItemGroup>
