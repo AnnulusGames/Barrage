@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Barrage.SourceGenerator\Barrage.SourceGenerator.csproj">
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+		</ProjectReference>
+
+    <None Include="..\Barrage.SourceGenerator\bin\$(Configuration)\netstandard2.0\Barrage.SourceGenerator.dll"
+          PackagePath="analyzers\dotnet\cs"
+          Pack="true"
+          Visible="false" />
+    
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PolySharp" Version="1.14.1">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net6.0;netstandard2.1</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>13</LangVersion>
+    
+    <!-- NuGet Packaging -->
+    <Description>Simple and robust Entity Component System (ECS) for .NET and Unity.</Description>
+  </PropertyGroup>
+
+</Project>

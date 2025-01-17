@@ -1,0 +1,60 @@
+<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+<#
+    var queryTypes = new string[] { "EntityQuery", "QueryArchetypeEnumerable", "QueryChunkEnumerable" };
+#>
+using System.Runtime.CompilerServices;
+
+namespace Barrage;
+
+public static partial class EntityQueryExtensions
+{
+<# foreach (var typeName in queryTypes) { #>
+    // <#=typeName#>
+
+<# for (int i = 0; i < 10; i++) { #>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static <#=typeName#> WithAll<<#= string.Join(',', Enumerable.Range(0, i + 1).Select(x => $"T{x}")) #>>(this <#=typeName#> query)
+    {
+        var source = query.GetQuerySource();
+        source.All.EnsureCapacity((int)MathF.Floor((ComponentRegistry.Count + <#=(i + 1)#>) / 8f));
+<# for (int j = 0; j <= i; j++) { #>
+        source.All.Set(ComponentRegistry.GetComponentType(typeof(<#= $"T{j}" #>)).Id, true);
+<# } #>
+        return query;
+    }
+<# } #>
+
+<# for (int i = 0; i < 10; i++) { #>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static <#=typeName#> WithAny<<#= string.Join(',', Enumerable.Range(0, i + 1).Select(x => $"T{x}")) #>>(this <#=typeName#> query)
+    {
+        var source = query.GetQuerySource();
+        source.Any.EnsureCapacity((int)MathF.Floor((ComponentRegistry.Count + <#=(i + 1)#>) / 8f));
+<# for (int j = 0; j <= i; j++) { #>
+        source.Any.Set(ComponentRegistry.GetComponentType(typeof(<#= $"T{j}" #>)).Id, true);
+<# } #>
+        return query;
+    }
+<# } #>
+
+    <# for (int i = 0; i < 10; i++) { #>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static <#=typeName#> WithNone<<#= string.Join(',', Enumerable.Range(0, i + 1).Select(x => $"T{x}")) #>>(this <#=typeName#> query)
+    {
+        var source = query.GetQuerySource();
+        source.None.EnsureCapacity((int)MathF.Floor((ComponentRegistry.Count + <#=(i + 1)#>) / 8f));
+<# for (int j = 0; j <= i; j++) { #>
+        source.None.Set(ComponentRegistry.GetComponentType(typeof(<#= $"T{j}" #>)).Id, true);
+<# } #>
+        return query;
+    }
+<# } #>
+
+<# } #>
+
+}
