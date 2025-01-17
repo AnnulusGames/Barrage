@@ -45,13 +45,6 @@ public static class ManagedComponentExtensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IDisposable SubscribeOnComponentSet<T>(this World world, ComponentEvent<T> handler)
-        where T : class
-    {
-        return world.SubscribeOnComponentSetManaged(handler);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IDisposable SubscribeOnComponentRemoved<T>(this World world, ComponentEvent<T> handler)
         where T : class
     {

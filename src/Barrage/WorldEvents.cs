@@ -10,7 +10,6 @@ internal sealed class WorldEvents
     Action<Entity>? onEntityCreated;
     Action<Entity>? onEntityDestroyed;
     object?[] onComponentAddedEvents = new object[32];
-    object?[] onComponentSetEvents = new object[32];
     object?[] onComponentRemovedEvents = new object[32];
 
     public ref Action<Entity>? OnEntityCreated => ref onEntityCreated;
@@ -21,14 +20,6 @@ internal sealed class WorldEvents
         var componentType = ComponentRegistry.GetComponentType(typeof(T));
         ArrayHelper.EnsureCapacity(ref onComponentAddedEvents, componentType.Id + 1);
         ref var eventHandler = ref onComponentAddedEvents[componentType.Id];
-        return ref Unsafe.As<object?, ComponentEvent<T>?>(ref eventHandler);
-    }
-
-    public ref ComponentEvent<T>? GetOnComponentSet<T>()
-    {
-        var componentType = ComponentRegistry.GetComponentType(typeof(T));
-        ArrayHelper.EnsureCapacity(ref onComponentSetEvents, componentType.Id + 1);
-        ref var eventHandler = ref onComponentSetEvents[componentType.Id];
         return ref Unsafe.As<object?, ComponentEvent<T>?>(ref eventHandler);
     }
 

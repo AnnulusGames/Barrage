@@ -116,8 +116,6 @@ public partial class World : IDisposable
         if (slot.Archetype.HasComponent<T>())
         {
             slot.Archetype.UnsafeSetComponent(ref slot, component);
-            events.GetOnComponentSet<T>()?.Invoke(entity, ref slot.GetChunk().GetComponentArray<T>()[slot.EntityIndex]);
-
             return;
         }
 
@@ -206,8 +204,6 @@ public partial class World : IDisposable
 
         ref var slot = ref entityStorage.GetSlot(entity);
         slot.Archetype.SetComponent(ref slot, component);
-
-        events.GetOnComponentSet<T>()?.Invoke(entity, ref slot.GetChunk().GetComponentArray<T>()[slot.EntityIndex]);
     }
 
     public bool HasComponent<T>(Entity entity)
@@ -255,8 +251,6 @@ public partial class World : IDisposable
 
         ref var slot = ref entityStorage.GetSlot(entity);
         slot.Archetype.SetComponentManaged(ref slot, component);
-
-        events.GetOnComponentSet<ManagedComponent<T>>()?.Invoke(entity, ref slot.GetChunk().GetComponentArray<ManagedComponent<T>>()[slot.EntityIndex]);
     }
 
     internal void RemoveComponentManaged<T>(Entity entity)
@@ -390,33 +384,6 @@ public partial class World : IDisposable
         return DisposableFactory.Create((world: this, (ComponentEvent<ManagedComponent<T>>)Handler), state =>
         {
             state.world.events.GetOnComponentAdded<ManagedComponent<T>>() -= Handler;
-        });
-    }
-
-    public IDisposable SubscribeOnComponentSet<T>(ComponentEvent<T> handler)
-        where T : unmanaged
-    {
-        events.GetOnComponentSet<T>() += handler;
-        return DisposableFactory.Create((world: this, handler), state =>
-        {
-            state.world.events.GetOnComponentSet<T>() -= handler;
-        });
-    }
-
-    internal IDisposable SubscribeOnComponentSetManaged<T>(ComponentEvent<T> handler)
-        where T : class
-    {
-        void Handler(Entity entity, ref ManagedComponent<T> componentReference)
-        {
-            var component = componentReference.HasValue ? managedComponentStorage.UnsafeGet<T>(componentReference.Index) : null;
-            handler(entity, ref component!);
-        }
-
-        events.GetOnComponentSet<ManagedComponent<T>>() += Handler;
-
-        return DisposableFactory.Create((world: this, (ComponentEvent<ManagedComponent<T>>)Handler), state =>
-        {
-            state.world.events.GetOnComponentSet<ManagedComponent<T>>() -= Handler;
         });
     }
 

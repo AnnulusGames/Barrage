@@ -12,11 +12,6 @@ world.SubscribeOnComponentRemoved((Entity entity, ref Name name) =>
     Console.WriteLine("Removed: " + name.Value);
 });
 
-world.SubscribeOnComponentSet((Entity entity, ref Name name) =>
-{
-    Console.WriteLine("Set: " + name.Value);
-});
-
 var arch = world.CreateArchetype([typeof(Name), typeof(ComponentA), typeof(ComponentB), typeof(ComponentC)]);
 
 var entity1 = world.CreateEntity(arch);
