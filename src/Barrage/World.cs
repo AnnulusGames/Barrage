@@ -326,30 +326,6 @@ public partial class World : IDisposable
         return true;
     }
 
-    public bool TryGetComponent(Entity entity, Type type, [NotNullWhen(true)] out object? component)
-    {
-        return ComponentRegistry.GetNonGenericDelegates(type)
-            .TryGetComponent(this, entity, out component);
-    }
-
-    public void SetComponent(Entity entity, object value)
-    {
-        ComponentRegistry.GetNonGenericDelegates(value.GetType())
-            .SetComponent(this, entity, value);
-    }
-
-    public void AddComponent(Entity entity, object value)
-    {
-        ComponentRegistry.GetNonGenericDelegates(value.GetType())
-            .AddComponent(this, entity, value);
-    }
-
-    public void RemoveComponent(Entity entity, Type type)
-    {
-        ComponentRegistry.GetNonGenericDelegates(type)
-            .RemoveComponent(this, entity);
-    }
-
     public bool HasComponent(Entity entity, Type type)
     {
         ThrowIfDisposed();

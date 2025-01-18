@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Barrage
@@ -15,6 +16,34 @@ namespace Barrage
         {
             if (!world.TryGetComponent<T>(entity, out var component)) ThrowHelper.ThrowComponentHasNotBeenAddedToEntity(typeof(T));
             return component;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryGetComponent(this World world, Entity entity, Type type, [NotNullWhen(true)] out object? component)
+        {
+            return ComponentRegistry.GetNonGenericDelegates(type)
+                .TryGetComponent(world, entity, out component);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SetComponent(this World world, Entity entity, object value)
+        {
+            ComponentRegistry.GetNonGenericDelegates(value.GetType())
+                .SetComponent(world, entity, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void AddComponent(this World world, Entity entity, object value)
+        {
+            ComponentRegistry.GetNonGenericDelegates(value.GetType())
+                .AddComponent(world, entity, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void RemoveComponent(this World world, Entity entity, Type type)
+        {
+            ComponentRegistry.GetNonGenericDelegates(type)
+                .RemoveComponent(world, entity);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
