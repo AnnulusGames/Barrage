@@ -56,6 +56,11 @@ public partial class World : IDisposable
 
         events.OnEntityCreated?.Invoke(entity);
 
+        foreach (var componentType in archetype.GetComponentTypes())
+        {
+            events.GetCallComponentAddedHandler(componentType)?.Invoke(this, entity);
+        }
+
         return entity;
     }
 
