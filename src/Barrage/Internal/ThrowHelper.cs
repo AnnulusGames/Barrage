@@ -12,6 +12,11 @@ internal static class ThrowHelper
         throw new IndexOutOfRangeException();
     }
 
+    public static void ThrowArchetypeWithDuplicateComponents()
+    {
+        throw new ArgumentException("Cannot create an archetype with duplicate components.");
+    }
+
     public static void ThrowDestinationIsTooShort()
     {
         throw new ArgumentException("Destination is too short.", "destination");

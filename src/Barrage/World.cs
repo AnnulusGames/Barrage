@@ -144,6 +144,32 @@ public partial class World : IDisposable
 
         events.GetOnComponentAdded<T>()?.Invoke(entity, ref dstReference);
     }
+
+    public void AddComponent(Entity entity, ReadOnlySpan<ComponentType> componentTypes)
+    {
+        ThrowIfDisposed();
+
+        ref var slot = ref entityStorage.GetSlot(entity);
+
+        // Create new archtype
+        ReadOnlySpan<ComponentType> newComponents = [.. slot.Archetype.GetComponentTypes(), .. componentTypes];
+        var newArchetype = CreateArchetype(newComponents);
+
+        // Move Entity
+        var srcChunk = slot.GetChunk();
+        var dstChunk = newArchetype.GetOrCreateLastChunk();
+
+        dstChunk.Add(entity);
+        ArchetypeChunk.CopyTo(srcChunk, dstChunk, slot.EntityIndex, dstChunk.Count - 1);
+
+        MoveEntitySlot(ref slot, srcChunk, dstChunk);
+
+        foreach (var componentType in newComponents)
+        {
+            events.GetCallComponentAddedHandler(componentType)?.Invoke(this, entity);
+        }
+    }
+
     public void RemoveComponent<T>(Entity entity)
         where T : unmanaged
     {
@@ -232,7 +258,7 @@ public partial class World : IDisposable
 
         if (slot.Archetype.HasComponent<T>())
         {
-            component = slot.Archetype.UnsafeGetComponent<T>(ref slot);
+            component = slot.Archetype.UnsafeGetComponentRef<T>(ref slot);
             return true;
         }
         else
@@ -325,6 +351,24 @@ public partial class World : IDisposable
     {
         ThrowIfDisposed();
 
+        // Fast duplicate check
+        Span<byte> bitSet = stackalloc byte[ComponentRegistry.Count / 8 + 1];
+        foreach (var type in types)
+        {
+            var byteIndex = type.Id / 8;
+            var bitOffset = type.Id % 8;
+            ref var bitSetRef = ref bitSet[byteIndex];
+
+            if ((bitSetRef & (1 << bitOffset)) == 1)
+            {
+                ThrowHelper.ThrowArchetypeWithDuplicateComponents();
+            }
+            else
+            {
+                bitSetRef |= (byte)(1 << bitOffset);
+            }
+        }
+
         foreach (var archetype in archetypes.AsSpan())
         {
             if (archetype.GetComponentTypes().SequenceEqual(types))
@@ -335,6 +379,7 @@ public partial class World : IDisposable
 
         var newArchetype = new Archetype(managedComponentStorage, types.ToArray());
         archetypes.Add(newArchetype);
+        
         return newArchetype;
     }
 
@@ -420,47 +465,58 @@ public partial class World : IDisposable
     public IDisposable SubscribeOnComponentAdded<T>(ComponentEvent<T> handler)
         where T : unmanaged
     {
+        static void CallHandler(World world, Entity entity)
+        {
+            ref var slot = ref world.entityStorage.GetSlot(entity);
+            world.events.GetOnComponentAdded<T>()?.Invoke(entity, ref slot.Archetype.UnsafeGetComponentRef<T>(ref slot));
+        }
+
         events.GetOnComponentAdded<T>() += handler;
+        events.GetCallComponentAddedHandler(typeof(T)) += CallHandler;
+
         return DisposableFactory.Create((world: this, handler), state =>
         {
             state.world.events.GetOnComponentAdded<T>() -= handler;
+            events.GetCallComponentAddedHandler(typeof(T)) -= CallHandler;
         });
     }
 
     internal IDisposable SubscribeOnComponentAddedManaged<T>(ComponentEvent<T> handler)
         where T : class
     {
-        void Handler(Entity entity, ref ManagedComponent<T> componentReference)
+        return SubscribeOnComponentAdded((Entity entity, ref ManagedComponent<T> componentReference) =>
         {
             var component = componentReference.HasValue ? managedComponentStorage.UnsafeGet<T>(componentReference.Index) : null;
             handler(entity, ref component!);
-        }
-
-        events.GetOnComponentAdded<ManagedComponent<T>>() += Handler;
-
-        return DisposableFactory.Create((world: this, (ComponentEvent<ManagedComponent<T>>)Handler), state =>
-        {
-            state.world.events.GetOnComponentAdded<ManagedComponent<T>>() -= Handler;
         });
     }
 
     public IDisposable SubscribeOnComponentRemoved<T>(ComponentEvent<T> handler)
         where T : unmanaged
     {
+        static void CallHandler(World world, Entity entity)
+        {
+            ref var slot = ref world.entityStorage.GetSlot(entity);
+            world.events.GetOnComponentRemoved<T>()?.Invoke(entity, ref slot.Archetype.UnsafeGetComponentRef<T>(ref slot));
+        }
+
         events.GetOnComponentRemoved<T>() += handler;
+        events.GetCallComponentRemovedHandler(typeof(T)) += CallHandler;
+
         return DisposableFactory.Create((world: this, handler), state =>
         {
             state.world.events.GetOnComponentRemoved<T>() -= handler;
+            events.GetCallComponentRemovedHandler(typeof(T)) -= CallHandler;
         });
     }
 
     internal IDisposable SubscribeOnComponentRemovedManaged<T>(ComponentEvent<T> handler)
         where T : class
     {
-        events.GetOnComponentRemoved<T>() += handler;
-        return DisposableFactory.Create((world: this, handler), state =>
+        return SubscribeOnComponentRemoved((Entity entity, ref ManagedComponent<T> componentReference) =>
         {
-            state.world.events.GetOnComponentRemoved<T>() -= handler;
+            var component = componentReference.HasValue ? managedComponentStorage.UnsafeGet<T>(componentReference.Index) : null;
+            handler(entity, ref component!);
         });
     }
 

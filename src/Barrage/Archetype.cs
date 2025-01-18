@@ -114,10 +114,10 @@ public sealed class Archetype
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal T UnsafeGetComponent<T>(ref EntitySlot slot)
+    internal ref T UnsafeGetComponentRef<T>(ref EntitySlot slot)
         where T : unmanaged
     {
-        return Unsafe.Add(ref Chunks[slot.ChunkIndex].GetComponentArray<T>()[slot.EntityIndex], slot.EntityIndex);
+        return ref Unsafe.Add(ref Chunks[slot.ChunkIndex].GetComponentArray<T>()[slot.EntityIndex], slot.EntityIndex);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
