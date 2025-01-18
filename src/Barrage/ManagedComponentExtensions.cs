@@ -5,6 +5,13 @@ namespace Barrage;
 public static class ManagedComponentExtensions
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TryGetComponent<T>(this World world, Entity entity, out T component)
+        where T : class
+    {
+        return world.TryGetComponentManaged(entity, out component!);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T GetComponent<T>(this World world, Entity entity)
         where T : class
     {
