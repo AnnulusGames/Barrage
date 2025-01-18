@@ -292,13 +292,18 @@ public partial class World : IDisposable
     {
         ThrowIfDisposed();
 
-        // TODO: optimize
         var reference = this.GetComponent<ManagedComponent<T>>(entity);
-        var component = managedComponentStorage.UnsafeGet<T>(reference);
-        managedComponentStorage.RemoveAt(reference);
+        var component = managedComponentStorage.UnsafeGet<T>(reference.Index);
         RemoveComponentCore<ManagedComponent<T>>(entity, out _);
 
-        events.GetOnComponentRemoved<T>()?.Invoke(entity, ref component!);
+        try
+        {
+            events.GetOnComponentRemoved<ManagedComponent<T>>()?.Invoke(entity, ref reference);
+        }
+        finally
+        {
+            managedComponentStorage.RemoveAt(reference);
+        }
     }
 
     internal bool TryGetComponentManaged<T>(Entity entity, [NotNullWhen(true)] out T? component)
@@ -379,7 +384,7 @@ public partial class World : IDisposable
 
         var newArchetype = new Archetype(managedComponentStorage, types.ToArray());
         archetypes.Add(newArchetype);
-        
+
         return newArchetype;
     }
 
