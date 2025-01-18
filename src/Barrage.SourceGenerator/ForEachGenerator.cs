@@ -217,19 +217,26 @@ internal static partial class WorldForEachExtensions
 {
     internal static void ForEach(this global::Barrage.World world, global::Barrage.EntityQuery query, ForEach_{{id}} action)
     {
-        foreach (var archetype in world.Archetypes)
+        try
         {
-            if (!archetype.Match(query)) continue;
-
-            foreach (var chunk in archetype.Chunks)
+            foreach (var archetype in world.Archetypes)
             {
-{{spans}}
-                for (int i = 0; i < chunk.Count; i++)
+                if (!archetype.Match(query)) continue;
+
+                foreach (var chunk in archetype.Chunks)
                 {
-{{references}}
-                    {{callAction}}
+    {{spans}}
+                    for (int i = 0; i < chunk.Count; i++)
+                    {
+    {{references}}
+                        {{callAction}}
+                    }
                 }
             }
+        }
+        finally
+        {
+            if (!query.IsPreserved) query.Dispose();
         }
     }
 }

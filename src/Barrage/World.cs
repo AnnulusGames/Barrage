@@ -359,9 +359,18 @@ public partial class World : IDisposable
     {
         ThrowIfDisposed();
 
-        var source = EntityQuerySource.Rent();
-        query.GetQuerySource().CopyTo(source);
-        return new QueryArchetypeEnumerable(this, source);
+        if (query.IsPreserved)
+        {
+            var source = EntityQuerySource.Rent();
+            query.GetQuerySource().CopyTo(source);
+            return new QueryArchetypeEnumerable(this, source);
+        }
+        else
+        {
+            var source = query.GetQuerySource();
+            query.Dispose();
+            return new QueryArchetypeEnumerable(this, source);
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -376,9 +385,18 @@ public partial class World : IDisposable
     {
         ThrowIfDisposed();
 
-        var source = EntityQuerySource.Rent();
-        query.GetQuerySource().CopyTo(source);
-        return new QueryChunkEnumerable(this, source);
+        if (query.IsPreserved)
+        {
+            var source = EntityQuerySource.Rent();
+            query.GetQuerySource().CopyTo(source);
+            return new QueryChunkEnumerable(this, source);
+        }
+        else
+        {
+            var source = query.GetQuerySource();
+            query.Dispose();
+            return new QueryChunkEnumerable(this, source);
+        }
     }
 
     public IDisposable SubscribeOnEntityCreated(Action<Entity> handler)

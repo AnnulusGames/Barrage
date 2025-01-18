@@ -1,11 +1,13 @@
 namespace Barrage
 {
-    public readonly partial struct EntityQuery : IDisposable
+    public partial struct EntityQuery : IDisposable
     {
         readonly ushort token;
         readonly EntityQuerySource source;
+        bool isPreserved;
 
         public bool IsDisposed => token != source.Token;
+        public bool IsPreserved => isPreserved;
 
         internal EntityQuerySource GetQuerySource()
         {
@@ -17,6 +19,12 @@ namespace Barrage
         {
             source = EntityQuerySource.Rent();
             token = source.Token;
+        }
+
+        public EntityQuery Preserve()
+        {
+            isPreserved = true;
+            return this;
         }
 
         public void Dispose()
