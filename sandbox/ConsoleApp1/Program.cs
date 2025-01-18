@@ -4,7 +4,7 @@ var world = World.Create();
 
 world.SubscribeOnComponentAdded((Entity entity, ref Name name) =>
 {
-    Console.WriteLine("Added: " + name.Value);
+    Console.WriteLine("Added: " + (name == null ? "null" : name.Value));
 });
 
 world.SubscribeOnComponentRemoved((Entity entity, ref Name name) =>
@@ -25,6 +25,10 @@ world.SetComponent<Name>(entity3, new("E3"));
 var entity4 = world.CreateEntity();
 world.AddComponent<Name>(entity4, new("E4"));
 
+var entity5 = world.CreateEntity();
+world.AddComponent(entity5, [typeof(Name), typeof(ComponentA), typeof(ComponentB), typeof(ComponentC)]);
+world.SetComponent(entity5, new Name("E5"));
+
 foreach (var chunk in world.QueryChunks()
     .WithAll<Name>())
 {
@@ -38,11 +42,12 @@ foreach (var chunk in world.QueryChunks()
 
 world.RemoveComponent<Name>(entity4);
 
+using var query = new EntityQuery()
+    .WithAll<Name, ComponentA, ComponentB, ComponentC>()
+    .Preserve();
+
 for (int j = 0; j < 10; j++)
 {
-    using var query = new EntityQuery()
-        .WithAll<Name, ComponentA, ComponentB, ComponentC>();
-
     world.ForEach(query, (Entity entity, Name name, ref ComponentA componentA, ref ComponentB componentB, ref ComponentC componentC) =>
     {
         componentA.Value += 1;
