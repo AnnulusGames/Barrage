@@ -53,6 +53,7 @@ internal static class ComponentRegistry
         if (!Cache<T>.Registered)
         {
             Cache<T>.Register();
+
             delegatesCache.TryAdd(typeof(T), new()
             {
                 TryGetComponent = (World world, Entity entity, out object component) =>
@@ -105,6 +106,13 @@ internal static class ComponentRegistry
 
             Initialize(type);
             return componentTypeCache[managedComponentType];
+        }
+        else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ManagedComponent<>))
+        {
+            if (componentTypeCache.TryGetValue(type, out var componentType)) return componentType;
+
+            Initialize(type.GenericTypeArguments[0]);
+            return componentTypeCache[type];
         }
         else
         {
