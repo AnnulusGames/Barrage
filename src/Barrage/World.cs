@@ -22,6 +22,7 @@ public partial class World : IDisposable
     bool isDisposed;
 
     public bool IsDisposed => isDisposed;
+
     World()
     {
     }
@@ -105,7 +106,14 @@ public partial class World : IDisposable
         events.OnEntityDestroyed?.Invoke(entity);
     }
 
-    public void AddComponent<T>(Entity entity, in T component)
+    public Archetype GetEntityArchetype(Entity entity)
+    {
+        ThrowIfDisposed();
+        ref var slot = ref entityStorage.GetSlot(entity);
+        return slot.Archetype;
+    }
+
+    public void AddComponent<T>(Entity entity, in T component = default)
         where T : unmanaged
     {
         ThrowIfDisposed();
@@ -120,7 +128,7 @@ public partial class World : IDisposable
         }
 
         // Create new archtype
-        ReadOnlySpan<ComponentType> newComponents = [.. slot.Archetype.GetComponentTypes(), ComponentRegistry.GetComponentType<T>()];
+        ReadOnlySpan<ComponentType> newComponents = [.. slot.Archetype.GetComponentTypes(), ComponentRegistry.GetComponentTypeUnmanaged<T>()];
         var newArchetype = CreateArchetype(newComponents);
 
         // Move Entity
@@ -159,7 +167,7 @@ public partial class World : IDisposable
 
         // Create new archetype
         using var newComponents = new PooledList<ComponentType>();
-        var componentType = ComponentRegistry.GetComponentType<T>();
+        var componentType = ComponentRegistry.GetComponentTypeUnmanaged<T>();
         foreach (var type in slot.Archetype.GetComponentTypes())
         {
             if (type != componentType) newComponents.Add(type);
@@ -280,6 +288,37 @@ public partial class World : IDisposable
 
         component = managedComponentStorage.UnsafeGet<T>(managedComponent.Index)!;
         return true;
+    }
+
+    public bool TryGetComponent(Entity entity, Type type, [NotNullWhen(true)] out object? component)
+    {
+        return ComponentRegistry.GetNonGenericDelegates(type)
+            .TryGetComponent(this, entity, out component);
+    }
+
+    public void SetComponent(Entity entity, object value)
+    {
+        ComponentRegistry.GetNonGenericDelegates(value.GetType())
+            .SetComponent(this, entity, value);
+    }
+
+    public void AddComponent(Entity entity, object value)
+    {
+        ComponentRegistry.GetNonGenericDelegates(value.GetType())
+            .AddComponent(this, entity, value);
+    }
+
+    public void RemoveComponent(Entity entity, Type type)
+    {
+        ComponentRegistry.GetNonGenericDelegates(type)
+            .RemoveComponent(this, entity);
+    }
+
+    public bool HasComponent(Entity entity, Type type)
+    {
+        ThrowIfDisposed();
+        ref var slot = ref entityStorage.GetSlot(entity);
+        return slot.Archetype.HasComponent(type);
     }
 
     public Archetype CreateArchetype(ReadOnlySpan<ComponentType> types)
