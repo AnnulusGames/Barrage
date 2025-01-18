@@ -1,0 +1,18 @@
+{
+    "name": "Barrage.Unity.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:6edecef34bdb348d49bd1e3879b8544c"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
