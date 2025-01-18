@@ -96,7 +96,7 @@ public sealed class Archetype
     public bool HasComponent<T>()
         where T : unmanaged
     {
-        return componentIdToDataPosition.ContainsKey(ComponentRegistry.GetComponentType<T>().Id);
+        return componentIdToDataPosition.ContainsKey(ComponentRegistry.GetComponentTypeUnmanaged<T>().Id);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

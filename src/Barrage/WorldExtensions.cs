@@ -18,10 +18,10 @@ namespace Barrage
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void AddComponent<T>(this World world, Entity entity)
-            where T : unmanaged
+        public static object GetComponent(this World world, Entity entity, Type type)
         {
-            world.AddComponent<T>(entity, default);
+            if (!world.TryGetComponent(entity, type, out var component)) ThrowHelper.ThrowComponentHasNotBeenAddedToEntity(type);
+            return component!;
         }
     }
 }

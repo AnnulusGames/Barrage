@@ -11,7 +11,7 @@ public class ArchetypeTests
     public void Test_GetSet_Component()
     {
         var entityStorage = new EntityStorage();
-        var archetype = new Archetype(new(), [ComponentRegistry.GetComponentType<ComponentA>(), ComponentRegistry.GetComponentType<ManagedComponent<ManagedComponentA>>()]);
+        var archetype = new Archetype(new(), [ComponentRegistry.GetComponentTypeUnmanaged<ComponentA>(), ComponentRegistry.GetComponentTypeUnmanaged<ManagedComponent<ManagedComponentA>>()]);
 
         var entity1 = entityStorage.Create(new()
         {

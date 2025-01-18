@@ -48,7 +48,7 @@ public sealed class ArchetypeChunk(Archetype archetype)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal ref T GetComponentReference<T>() where T : unmanaged
     {
-        var componentType = ComponentRegistry.GetComponentType<T>();
+        var componentType = ComponentRegistry.GetComponentTypeUnmanaged<T>();
         ref var componentRef = ref GetComponentReference(componentType);
         return ref Unsafe.As<byte, T>(ref componentRef);
     }
